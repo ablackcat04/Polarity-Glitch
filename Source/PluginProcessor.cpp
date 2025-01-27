@@ -1,7 +1,6 @@
+#include <random>
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-
-#include <list>
 
 //==============================================================================
 AudioPluginAudioProcessor::AudioPluginAudioProcessor()
@@ -12,8 +11,12 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       )
+                       ), apvts (*this, nullptr, "PARAMETERS", createParameterLayout())
 {
+    int channels = getTotalNumInputChannels();
+    std::vector<std::vector<float>> fs(channels, std::vector<float>(1024));
+    futureSamples = fs;
+    setLatencySamples(latencySamples);
 }
 
 AudioPluginAudioProcessor::~AudioPluginAudioProcessor()
@@ -147,6 +150,32 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
+    auto playHead = getPlayHead();
+    juce::Optional<int64_t> pos = playHead->getPosition()->getTimeInSamples();
+
+    if (pos.hasValue()) {
+        std::mt19937 generator;
+        std::seed_seq seedSeq{static_cast<unsigned>(*pos), static_cast<unsigned>((buffer.getNumSamples()) * totalNumInputChannels)};
+        std::uniform_real_distribution<float> distribution(0.0f, 1.0f);
+
+        for (int channel = 0; channel < totalNumInputChannels; ++channel)
+        {
+            auto* channelData = buffer.getWritePointer (channel);
+            float randomValue = 0.0f;
+            auto* rp = buffer.getReadPointer(channel);
+
+            for (int sample = 0; sample < buffer.getNumSamples(); sample++)
+            {
+                if ((*pos + sample) % blockSize == 0) {
+                    randomValue = distribution(generator);
+                }
+
+                bool invert = randomValue >= probability;
+                channelData[sample] = invert ? -rp[sample] : rp[sample];
+                // std::cout << randomValue << " " << probability << std::endl;
+            }
+        }
+    }
 }
 
 //==============================================================================

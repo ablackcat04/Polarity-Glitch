@@ -42,7 +42,25 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    juce::AudioProcessorValueTreeState apvts;
+    double probability = 0.0f;
+    int16_t blockSize = 1;
+    int32_t counter = 0;
+    std::vector<std::vector<float>> futureSamples;
+    int32_t writePtr = 0;
+    int16_t smooth = 16;
+    int32_t latencySamples = 1024;
 private:
     //==============================================================================
+    static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
+    {
+        juce::AudioProcessorValueTreeState::ParameterLayout layout;
+
+        layout.add (std::make_unique<juce::AudioParameterFloat> (juce::String (0), juce::String ("Probability"), 0.0f, 0.5f, 0.0f));
+        layout.add (std::make_unique<juce::AudioParameterInt>(juce::String(1), juce::String("Block Size"), 1, 2400, 1));
+
+        return layout;
+    }
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)
 };

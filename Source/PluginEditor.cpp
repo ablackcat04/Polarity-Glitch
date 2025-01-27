@@ -14,7 +14,40 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     buildInfo.setJustificationType(juce::Justification::centredBottom);
     addAndMakeVisible(buildInfo);
 
+    probabilitySliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processorRef.apvts, "Probability", probability);
+
+    probability.setSliderStyle(juce::Slider::SliderStyle::LinearBarVertical);
+    probability.setRange(0.0f, 0.5f, 0.01f);
+    probability.setDoubleClickReturnValue(true, 0.0f);
+    probability.addListener(this);
+    probability.setBounds(50, 30, 50, 200);
+
+    addAndMakeVisible(probability);
+
+    blockSizeSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processorRef.apvts, "Block Size", blockSize);
+
+    blockSize.setSliderStyle(juce::Slider::SliderStyle::LinearBarVertical);
+    blockSize.setRange(1, 2400, 1);
+    blockSize.setDoubleClickReturnValue(true, 1);
+    blockSize.addListener(this);
+    blockSize.setBounds(400, 30, 50, 200);
+
+    addAndMakeVisible(blockSize);
+
+
     setSize (500, 300);
+}
+
+void AudioPluginAudioProcessorEditor::sliderValueChanged(juce::Slider* slider)
+{
+    if (slider == &probability)
+    {
+        processorRef.probability = probability.getValue();
+    }
+    else if (slider == &blockSize)
+    {
+        processorRef.blockSize = blockSize.getValue();
+    }
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
@@ -29,7 +62,7 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
 
     g.setColour (juce::Colours::white);
     g.setFont (15.0f);
-    g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
+    g.drawFittedText ("Hello World! g", getLocalBounds(), juce::Justification::centred, 1);
 }
 
 void AudioPluginAudioProcessorEditor::resized()

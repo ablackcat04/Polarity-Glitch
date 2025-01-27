@@ -1,8 +1,7 @@
-# JUCE MIDI Effect Plugin Template
+# Polarity Glitch
 
 ### How to setup
 clone this repo
-git submodule add https://github.com/juce-framework/JUCE.git
 git submodule update --init --recursive
 
 ### Notes
