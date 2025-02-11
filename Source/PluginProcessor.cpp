@@ -166,16 +166,38 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
             for (int sample = 0; sample < buffer.getNumSamples(); sample++)
             {
-
                 futureSamples[channel][(writePtr + sample) % (latencySamples+1)] = rp[sample];
 
                 if ((*pos + sample) % blockSize == 0) {
                     randomValue = distribution(generator);
+                    previousInvert = invert;
+                    invert = randomValue >= probability;
+                    if (previousInvert != invert) {
+                        state = State::SMOOTH;
+                        smoothCounter = 0;
+                        smoothTargetSamples = blockSize * smooth;
+                        if (invert) {
+                            smoothStartValue = futureSamples[channel][(writePtr + sample + 1) % (latencySamples + 1)];
+                            smoothEndValue = -futureSamples[channel][(writePtr + sample + smoothTargetSamples + 1) % (latencySamples + 1)];
+                        } else {
+                            smoothStartValue = -futureSamples[channel][(writePtr + sample + 1) % (latencySamples + 1)];
+                            smoothEndValue = futureSamples[channel][(writePtr + sample + smoothTargetSamples + 1) % (latencySamples + 1)];
+                        }
+                    }
                 }
-                bool invert = randomValue >= probability;
-                channelData[sample] = invert ? -(futureSamples[channel][(writePtr + sample + 1) % (latencySamples+1)]) : futureSamples[channel][(writePtr + sample + 1) % (latencySamples+1)];
 
-                std::cout << futureSamples[channel][(writePtr + sample) % (latencySamples+1)] << std::endl;
+                if (smoothCounter >= smoothTargetSamples) {
+                    state = State::NORMAL;
+                }
+
+                if (state == State::NORMAL) {
+                    channelData[sample] = invert ? -(futureSamples[channel][(writePtr + sample + 1) % (latencySamples+1)])
+                                                 : futureSamples[channel][(writePtr + sample + 1) % (latencySamples+1)];
+                } else {
+                    float ratio = (float)smoothCounter / (float)smoothTargetSamples;
+                    channelData[sample] = smoothStartValue * ratio + smoothEndValue * (1 - ratio);
+                    ++smoothCounter;
+                }
             }
         }
         writePtr += buffer.getNumSamples();

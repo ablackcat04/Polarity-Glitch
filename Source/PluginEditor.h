@@ -24,6 +24,7 @@ private:
 
     juce::Slider probability;
     juce::Slider blockSize;
+    juce::Slider smooth;
 
     juce::Label buildInfo;
 

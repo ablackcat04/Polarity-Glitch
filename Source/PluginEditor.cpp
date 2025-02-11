@@ -34,6 +34,16 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     addAndMakeVisible(blockSize);
 
+    blockSizeSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processorRef.apvts, "Smooth", smooth);
+
+    smooth.setSliderStyle(juce::Slider::SliderStyle::LinearBarVertical);
+    smooth.setRange(0.0f, 1.0f, 0.01f);
+    smooth.setDoubleClickReturnValue(true, 0.0f);
+    smooth.addListener(this);
+    smooth.setBounds(250, 30, 50, 200);
+
+    addAndMakeVisible(smooth);
+
 
     setSize (500, 300);
 }
@@ -47,6 +57,9 @@ void AudioPluginAudioProcessorEditor::sliderValueChanged(juce::Slider* slider)
     else if (slider == &blockSize)
     {
         processorRef.blockSize = blockSize.getValue();
+    } else if (slider == &smooth)
+    {
+        processorRef.smooth = smooth.getValue();
     }
 }
 
@@ -62,7 +75,7 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
 
     g.setColour (juce::Colours::white);
     g.setFont (15.0f);
-    g.drawFittedText ("Hello World! g", getLocalBounds(), juce::Justification::centred, 1);
+    g.drawFittedText ("Hello World! p", getLocalBounds(), juce::Justification::centred, 1);
 }
 
 void AudioPluginAudioProcessorEditor::resized()

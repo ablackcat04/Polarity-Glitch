@@ -48,8 +48,21 @@ public:
     int32_t counter = 0;
     std::vector<std::vector<float>> futureSamples;
     int32_t writePtr = 0;
-    int16_t smooth = 16;
+    double smooth = 0.0;
     int32_t latencySamples = 1024;
+    bool invert = false;
+    bool previousInvert = false;
+
+    int16_t smoothCounter = 0;
+    int16_t smoothTargetSamples = 0;
+    float smoothEndValue = 0.0f;
+    float smoothStartValue = 0.0f;
+
+    enum class State {
+        NORMAL, SMOOTH
+    };
+
+    State state;
 private:
     //==============================================================================
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
@@ -58,6 +71,7 @@ private:
 
         layout.add (std::make_unique<juce::AudioParameterFloat> (juce::String (0), juce::String ("Probability"), 0.0f, 0.5f, 0.0f));
         layout.add (std::make_unique<juce::AudioParameterInt>(juce::String(1), juce::String("Block Size"), 1, 2400, 1));
+        layout.add (std::make_unique<juce::AudioParameterInt>(juce::String(2), juce::String("Smooth"), 0.0f, 1.0f, 0.0f));
 
         return layout;
     }
