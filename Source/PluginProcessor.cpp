@@ -14,7 +14,7 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
                        ), apvts (*this, nullptr, "PARAMETERS", createParameterLayout())
 {
     int channels = getTotalNumInputChannels();
-    std::vector<std::vector<float>> fs(channels, std::vector<float>(1024));
+    std::vector<std::vector<float>> fs(channels, std::vector<float>(latencySamples + 1));
     futureSamples = fs;
     setLatencySamples(latencySamples);
 }
@@ -155,7 +155,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
     if (pos.hasValue()) {
         std::mt19937 generator;
-        std::seed_seq seedSeq{static_cast<unsigned>(*pos), static_cast<unsigned>((buffer.getNumSamples()) * totalNumInputChannels)};
+        std::seed_seq seedSeq{static_cast<unsigned>(*pos), static_cast<unsigned>((buffer.getNumSamples()) * totalNumInputChannels * 2)};
         std::uniform_real_distribution<float> distribution(0.0f, 1.0f);
 
         for (int channel = 0; channel < totalNumInputChannels; ++channel)
@@ -166,15 +166,20 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
             for (int sample = 0; sample < buffer.getNumSamples(); sample++)
             {
+
+                futureSamples[channel][(writePtr + sample) % (latencySamples+1)] = rp[sample];
+
                 if ((*pos + sample) % blockSize == 0) {
                     randomValue = distribution(generator);
                 }
-
                 bool invert = randomValue >= probability;
-                channelData[sample] = invert ? -rp[sample] : rp[sample];
-                // std::cout << randomValue << " " << probability << std::endl;
+                channelData[sample] = invert ? -(futureSamples[channel][(writePtr + sample + 1) % (latencySamples+1)]) : futureSamples[channel][(writePtr + sample + 1) % (latencySamples+1)];
+
+                std::cout << futureSamples[channel][(writePtr + sample) % (latencySamples+1)] << std::endl;
             }
         }
+        writePtr += buffer.getNumSamples();
+        writePtr %= (latencySamples + 1);
     }
 }
 
