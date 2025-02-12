@@ -50,7 +50,7 @@ public:
     std::vector<std::vector<float>> futureSamples;
     int32_t writePtr = 0;
     double smooth = 0.0;
-    int32_t latencySamples = 1024;
+    int32_t latencySamples = 512;
     bool invert = false;
     bool previousInvert = false;
 
@@ -73,7 +73,7 @@ private:
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
         layout.add (std::make_unique<juce::AudioParameterFloat> (juce::String ("probability"), juce::String ("Probability"), 0.0f, 0.5f, 0.0f));
-        layout.add (std::make_unique<juce::AudioParameterInt>(juce::String("block size"), juce::String("Block Size"), 1, 1000, 1));
+        layout.add (std::make_unique<juce::AudioParameterInt>(juce::String("block size"), juce::String("Block Size"), 1, 512, 1));
         layout.add (std::make_unique<juce::AudioParameterFloat>(juce::String("smooth"), juce::String("Smooth"), 0.0f, 1.0f, 0.0f));
         layout.add (std::make_unique<juce::AudioParameterFloat>(juce::String("smooth mode"), juce::String("SmoothMode"), 0.0f, 1.0f, 0.0f));
         layout.add (std::make_unique<juce::AudioParameterFloat>(juce::String("mix"), juce::String("Mix"), 0.0f, 1.0f, 1.0f));
