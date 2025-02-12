@@ -1,6 +1,7 @@
 #include <random>
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#define PI 3.141592653589793238L
 
 //==============================================================================
 AudioPluginAudioProcessor::AudioPluginAudioProcessor()
@@ -195,7 +196,15 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                                                  : futureSamples[channel][(writePtr + sample + 1) % (latencySamples+1)];
                 } else {
                     float ratio = (float)smoothCounter / (float)smoothTargetSamples;
-                    channelData[sample] = smoothStartValue * ratio + smoothEndValue * (1 - ratio);
+                    float linearInterpolation = smoothStartValue * ratio + smoothEndValue * (1 - ratio);
+
+                    float positionRadius = PI * (float)smoothCounter / (float)smoothTargetSamples;
+                    long double ratioSin = std::cos(positionRadius) * -0.5L + 0.5L;
+
+                    float sinInterpolation = smoothStartValue * ratioSin + smoothEndValue * (1 - ratioSin);
+
+                    channelData[sample] = sinInterpolation * smoothMode + (linearInterpolation) * (1.0 - smoothMode);
+
                     ++smoothCounter;
                 }
             }

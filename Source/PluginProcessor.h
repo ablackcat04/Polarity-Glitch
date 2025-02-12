@@ -43,6 +43,7 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     juce::AudioProcessorValueTreeState apvts;
+
     double probability = 0.0f;
     int16_t blockSize = 1;
     int32_t counter = 0;
@@ -57,6 +58,8 @@ public:
     int16_t smoothTargetSamples = 0;
     float smoothEndValue = 0.0f;
     float smoothStartValue = 0.0f;
+
+    double smoothMode = 0.0;
 
     enum class State {
         NORMAL, SMOOTH

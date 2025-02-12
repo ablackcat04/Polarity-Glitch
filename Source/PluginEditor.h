@@ -17,6 +17,8 @@ public:
 
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> probabilitySliderAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> blockSizeSliderAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> smoothSliderAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> smoothModeSliderAttachment;
 private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
@@ -25,6 +27,7 @@ private:
     juce::Slider probability;
     juce::Slider blockSize;
     juce::Slider smooth;
+    juce::Slider smoothMode;
 
     juce::Label buildInfo;
 
