@@ -154,6 +154,13 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     auto playHead = getPlayHead();
     juce::Optional<int64_t> pos = playHead->getPosition()->getTimeInSamples();
 
+    double probability = *apvts.getRawParameterValue("probability");
+    double smooth = *apvts.getRawParameterValue("smooth");
+    double smoothMode = *apvts.getRawParameterValue("smooth mode");
+    int16_t blockSize = *apvts.getRawParameterValue("block size");
+    double mix = *apvts.getRawParameterValue("mix");
+    bool bypass = *apvts.getRawParameterValue("bypass");
+
     if (pos.hasValue()) {
         std::mt19937 generator;
         std::seed_seq seedSeq{static_cast<unsigned>(*pos), static_cast<unsigned>((buffer.getNumSamples()) * totalNumInputChannels * 2)};
@@ -191,8 +198,10 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                     state = State::NORMAL;
                 }
 
+                float processedSample = 0.0f;
+
                 if (state == State::NORMAL) {
-                    channelData[sample] = invert ? -(futureSamples[channel][(writePtr + sample + 1) % (latencySamples+1)])
+                    processedSample = invert ? -(futureSamples[channel][(writePtr + sample + 1) % (latencySamples+1)])
                                                  : futureSamples[channel][(writePtr + sample + 1) % (latencySamples+1)];
                 } else {
                     float ratio = (float)smoothCounter / (float)smoothTargetSamples;
@@ -203,9 +212,14 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
                     float sinInterpolation = smoothStartValue * ratioSin + smoothEndValue * (1 - ratioSin);
 
-                    channelData[sample] = sinInterpolation * smoothMode + (linearInterpolation) * (1.0 - smoothMode);
+                    processedSample = sinInterpolation * smoothMode + (linearInterpolation) * (1.0 - smoothMode);
 
                     ++smoothCounter;
+                }
+
+                if (!bypass) {
+                    long double p = mix * PI / 2;
+                    channelData[sample] = std::sin(p) * processedSample + std::cos(p) * channelData[sample];
                 }
             }
         }
@@ -222,7 +236,8 @@ bool AudioPluginAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* AudioPluginAudioProcessor::createEditor()
 {
-    return new AudioPluginAudioProcessorEditor (*this);
+    return new juce::GenericAudioProcessorEditor(*this);
+    // return new AudioPluginAudioProcessorEditor (*this);
 }
 
 //==============================================================================

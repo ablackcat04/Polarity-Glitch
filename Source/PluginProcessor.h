@@ -72,9 +72,12 @@ private:
     {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
-        layout.add (std::make_unique<juce::AudioParameterFloat> (juce::String (0), juce::String ("Probability"), 0.0f, 0.5f, 0.0f));
-        layout.add (std::make_unique<juce::AudioParameterInt>(juce::String(1), juce::String("Block Size"), 1, 2400, 1));
-        layout.add (std::make_unique<juce::AudioParameterInt>(juce::String(2), juce::String("Smooth"), 0.0f, 1.0f, 0.0f));
+        layout.add (std::make_unique<juce::AudioParameterFloat> (juce::String ("probability"), juce::String ("Probability"), 0.0f, 0.5f, 0.0f));
+        layout.add (std::make_unique<juce::AudioParameterInt>(juce::String("block size"), juce::String("Block Size"), 1, 1000, 1));
+        layout.add (std::make_unique<juce::AudioParameterFloat>(juce::String("smooth"), juce::String("Smooth"), 0.0f, 1.0f, 0.0f));
+        layout.add (std::make_unique<juce::AudioParameterFloat>(juce::String("smooth mode"), juce::String("SmoothMode"), 0.0f, 1.0f, 0.0f));
+        layout.add (std::make_unique<juce::AudioParameterFloat>(juce::String("mix"), juce::String("Mix"), 0.0f, 1.0f, 1.0f));
+        layout.add (std::make_unique<juce::AudioParameterBool>(juce::String("bypass"), juce::String("Bypass"), false));
 
         return layout;
     }
