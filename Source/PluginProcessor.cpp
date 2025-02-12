@@ -220,6 +220,8 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                 if (!bypass) {
                     long double p = mix * PI / 2;
                     channelData[sample] = std::sin(p) * processedSample + std::cos(p) * channelData[sample];
+                } else {
+                    channelData[sample] = futureSamples[channel][(writePtr + sample + 1) % (latencySamples+1)];
                 }
             }
         }
