@@ -76,6 +76,7 @@ private:
         layout.add (std::make_unique<juce::AudioParameterInt>(juce::String("block size"), juce::String("Block Size"), 1, 512, 1));
         layout.add (std::make_unique<juce::AudioParameterFloat>(juce::String("smooth"), juce::String("Smooth"), 0.0f, 1.0f, 0.0f));
         layout.add (std::make_unique<juce::AudioParameterFloat>(juce::String("smooth mode"), juce::String("Smooth Mode"), 0.0f, 1.0f, 0.0f));
+        layout.add (std::make_unique<juce::AudioParameterFloat>(juce::String("smooth reversion"), juce::String("Smooth Reversion"), 0.0f, 1.0f, 0.0f));
         layout.add (std::make_unique<juce::AudioParameterFloat>(juce::String("mix"), juce::String("Mix"), 0.0f, 1.0f, 1.0f));
         layout.add (std::make_unique<juce::AudioParameterBool>(juce::String("bypass"), juce::String("Bypass"), false));
 

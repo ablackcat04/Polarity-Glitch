@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(Polarity-Glitch VERSION 0.5.2)
+project(Polarity-Glitch VERSION 0.6.0)
 
 # First setup JUCE as a git submodule using:
 # git submodule add https://github.com/juce-framework/JUCE.git

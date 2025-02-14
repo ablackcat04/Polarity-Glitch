@@ -158,6 +158,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     double smooth = *apvts.getRawParameterValue("smooth");
     double smoothMode = *apvts.getRawParameterValue("smooth mode");
     int16_t blockSize = *apvts.getRawParameterValue("block size");
+    double smoothInversion = *apvts.getRawParameterValue("smooth reversion");
     double mix = *apvts.getRawParameterValue("mix");
     bool bypass = *apvts.getRawParameterValue("bypass");
 
@@ -179,7 +180,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                 if ((*pos + sample) % blockSize == 0) {
                     randomValue = distribution(generator);
                     previousInvert = invert;
-                    invert = randomValue >= probability;
+                    invert = randomValue <= probability;
                     if (previousInvert != invert) {
                         state = State::SMOOTH;
                         smoothCounter = 0;
@@ -205,21 +206,27 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                                                  : futureSamples[channel][(writePtr + sample + 1) % (latencySamples+1)];
                 } else {
                     float ratio = (float)smoothCounter / (float)smoothTargetSamples;
-                    float linearInterpolation = smoothStartValue * ratio + smoothEndValue * (1 - ratio);
+                    float linearInterpolation = smoothStartValue * (1 - ratio) + smoothEndValue * ratio;
+                    float linearInterpolationReversed = smoothStartValue * ratio + smoothEndValue * (1 - ratio);
+
+                    linearInterpolation = linearInterpolation * (1 - smoothInversion) + linearInterpolationReversed * smoothInversion;
 
                     float positionRadius = PI * (float)smoothCounter / (float)smoothTargetSamples;
                     long double ratioSin = std::cos(positionRadius) * -0.5L + 0.5L;
 
-                    float sinInterpolation = smoothStartValue * ratioSin + smoothEndValue * (1 - ratioSin);
+                    float sinInterpolation = smoothStartValue * (1 - ratioSin) + smoothEndValue * ratioSin;
+                    float sinInterpolationReversed = smoothStartValue * ratioSin + smoothEndValue * (1 - ratioSin);
 
-                    processedSample = sinInterpolation * smoothMode + (linearInterpolation) * (1.0 - smoothMode);
+                    sinInterpolation = sinInterpolation * (1 - smoothInversion) + sinInterpolationReversed * smoothInversion;
+
+                    processedSample = sinInterpolation * smoothMode + linearInterpolation * (1.0 - smoothMode);
 
                     ++smoothCounter;
                 }
 
                 if (!bypass) {
                     long double p = mix * PI / 2;
-                    channelData[sample] = std::sin(p) * processedSample + std::cos(p) * channelData[sample];
+                    channelData[sample] = (std::sin(p) * processedSample) + (std::cos(p) * futureSamples[channel][(writePtr + sample + 1) % (latencySamples+1)]);
                 } else {
                     channelData[sample] = futureSamples[channel][(writePtr + sample + 1) % (latencySamples+1)];
                 }
