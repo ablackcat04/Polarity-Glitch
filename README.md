@@ -8,7 +8,7 @@ By manipulating signal polarity at the block level with customizable parameters,
 it offers a fresh approach to sound design and audio processing.
 
 ## Download
-Please go to the Gumroad page for download: [link]
+Please go to the Gumroad page for download: https://ablackcat04.gumroad.com/l/polarity-glitch
 
 We only provide VST3 now, but since we use the JUCE C++ framework,
 you can build other supported plugin formats as you want.
